@@ -1,0 +1,38 @@
+\documentclass[unicode,11pt,a4paper,oneside,numbers=endperiod,openany]{article}
+
+\usepackage{float}
+\usepackage{enumitem} % \alph*
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{graphicx}
+\usepackage[makeroom]{cancel}
+
+% \usepackage[utf8]{inputenc}
+% \usepackage{wasysym}
+% \usepackage{svg}
+% \usepackage{fourier}
+
+% \usepackage{minted}
+% \usemintedstyle{tango}
+
+\renewcommand{\arraystretch}{1.4}
+
+\title{Scientific Machine Learning \\ Final Project}
+\author{Lovnesh Bhardwaj, Laurynas Varnas}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{align*}
+	\frac{\partial u}{\partial t} - \nabla \cdot \Sigma \nabla u + f(u) & = 0   & \text{in } \Omega \times I,          \\
+	\mathbf{n} \cdot \nabla u                                           & = 0   & \text{in } \partial \Omega \times I, \\
+	u                                                                   & = u_0 & \text{in } \Omega \times \{0\},
+\end{align*}
+
+\nocite{*}
+\bibliographystyle{abbrv}
+\bibliography{biblio}
+
+\end{document}
