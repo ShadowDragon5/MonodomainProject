@@ -25,14 +25,195 @@
 \begin{document}
 \maketitle
 
+\noindent
+Let $\Omega = (0, 1)^2$ be the spatial domain and $I = (0, T]$ a time interval.
+We consider the dimensionless monodomain equation, used for the simulation of
+excitable tissues, which can be defined as:
+
 \begin{align*}
-	\frac{\partial u}{\partial t} - \nabla \cdot \Sigma \nabla u + f(u) & = 0   & \text{in } \Omega \times I,          \\
-	\mathbf{n} \cdot \nabla u                                           & = 0   & \text{in } \partial \Omega \times I, \\
-	u                                                                   & = u_0 & \text{in } \Omega \times \{0\},
+	\pdv{u}{t} - \divergence \Sigma \grad u + f(u) & = 0   & \text{in } \Omega \times I,          \\
+	\mathbf{n} \cdot \grad u                       & = 0   & \text{on } \partial \Omega \times I, \\
+	u                                              & = u_0 & \text{in } \Omega \times \{0\},
 \end{align*}
+
+where the reaction term $f$ is given by:
+
+\begin{align*}
+	f(u) & = a(u - f_r)(u - f_t)(u - f_d), \\
+	a    & = 18.515,                       \\
+	f_t  & = 0.2383,                       \\
+	f_r  & = 0,                            \\
+	f_d  & = 1.
+\end{align*}
+
+We assume heterogeneous conductivity across the spatial domain:
+
+\begin{align*}
+	\Sigma_h & = 9.5298 \times 10^{-4},                       \\
+	\Sigma_d & \in \qty{ 10\Sigma_h, \Sigma_h, 0.1\Sigma_h }.
+\end{align*}
+
+\begin{align*}
+	\Omega_{d1} & = \qty{ (x, y) \in \Omega \mid (x - 0.3)^2 + (y - 0.7)^2 < 0.1^2 },  \\
+	\Omega_{d2} & = \qty{ (x, y) \in \Omega \mid (x - 0.7)^2 + (y - 0.3)^2 < 0.15^2 }, \\
+	\Omega_{d3} & = \qty{ (x, y) \in \Omega \mid (x - 0.5)^2 + (y - 0.5)^2 < 0.1^2 }.
+\end{align*}
+
+\section{Finite Element Method}
+
+
+\subsection{IMEX time integration scheme}
+
+We discretize the time interval into steps of size $\Delta t$, and
+denote the approximation of $u(x, t_n)$ by $U^n(x)$. Let the
+nonlinear reaction term $f(u)$ be treated explicitly and the
+diffusion term implicitly. The semi-discrete IMEX scheme is:
+
+\begin{align*}
+	\frac{U^{n+1} - U^n}{\Delta t} = \divergence \Sigma \grad U^{n+1} - f(U^n).
+\end{align*}
+
+Rearranging terms:
+
+\begin{align*}
+	U^{n+1} - U^n                                         & = \Delta t\, \divergence \Sigma \grad U^{n+1} - \Delta t\, f(U^n), \\
+	U^{n+1} - \Delta t\, \divergence \Sigma \grad U^{n+1} & = U^n - \Delta t\, f(U^n).
+\end{align*}
+
+Assuming a spatial discretization with mesh size $h$, and denoting
+by $A$ the discrete Laplace operator (stiffness matrix), we
+obtain the algebraic form:
+
+\begin{align*}
+	(\mathbf I - \frac{\Delta t}{h^2} A) U^{n+1} = U^n - \Delta t\, f(U^n).
+\end{align*}
+
+We approximate the solution at time $t_n$ by a finite element function:
+
+\begin{align*}
+	U^n(x) = \sum_{j=1}^{N} u_j^n \phi_j(x),
+\end{align*}
+
+where $\{\phi_j\}_{j=1}^N$ is a basis for the finite element space
+$\mathbb{V}_h \subset \mathbb{V}$, and $u_j^n$ are the
+coefficients to be computed.
+
+
+\subsection{Weak formulation for time $t_n$}
+
+Let $v \in \mathbb{V}$. Applying the IMEX time discretization, we multiply the equation by
+$v$ and integrate over $\Omega$:
+
+\begin{align*}
+	\int_\Omega \frac{U^{n+1} - U^n}{\Delta t} v\,\diffd x +
+	\int_\Omega \Sigma \grad U^{n+1} \cdot \grad v\,\diffd x =
+	\int_\Omega f(U^n) v\,\diffd x
+\end{align*}
+
+The boundary term vanishes due to the homogeneous Neumann condition:
+\[
+	\int_{\partial \Omega} (\Sigma \nabla U^{n+1} \cdot \mathbf{n}) v \,\diffd s = 0.
+\]
+
+Find $U^{n+1} \in \mathbb{V}$ such that:
+
+\begin{align*}
+	a(U^{n+1}, v) = F(v) \quad \forall v \in \mathbb{V}
+\end{align*}
+
+where
+
+\begin{align*}
+	a(U^{n+1}, v) & = \int_\Omega \frac{U^{n+1}}{\Delta t} v\,\diffd x
+	+ \int_\Omega \Sigma \grad U^{n+1} \cdot \grad v\,\diffd x                             \\
+	F(v)          & = \int_\Omega \left( \frac{U^n}{\Delta t} + f(U^n) \right) v\,\diffd x
+\end{align*}
+
+
+\subsection{Algebraic formulation of the FEM discretization}
+
+Using the basis functions $\{\phi_j\}$ and the expansion $U^n(x) = \sum_j u_j^n \phi_j(x)$, the weak form becomes a linear system at
+each time step:
+
+\begin{align*}
+	(\mathbf M + \Delta t\, \mathbf K)\, \mathbf u^{n+1} = \mathbf M\, \mathbf u^n - \Delta t\, \mathbf f(U^n),
+\end{align*}
+
+where:
+\begin{align*}
+	\mathbf M_{ij}   & = \int_\Omega \phi_i(x) \phi_j(x)\,\diffd x \quad                             & \text{(mass matrix)}           \\
+	\mathbf K_{ij}   & = \int_\Omega \Sigma(x) \grad \phi_i(x) \cdot \grad \phi_j(x)\,\diffd x \quad & \text{(stiffness matrix)}      \\
+	\mathbf f_i(U^n) & = \int_\Omega f(U^n(x)) \phi_i(x)\,\diffd x \quad                             & \text{(nonlinear load vector)}
+\end{align*}
+
+
+\subsection{Simulation results}
+
+$\Sigma_d = 10$
+\begin{table}[H]
+	\centering
+	\begin{tabular}{l|r|ccc}
+		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
+		\hline
+		0.1        & 64    & 28.60           & true      & false          \\
+		0.1        & 128   & 29.10           & true      & false          \\
+		0.1        & 256   & 29.20           & true      & false          \\
+		0.05       & 64    & 26.60           & false     & false          \\
+		0.05       & 128   & 27.15           & true      & true           \\
+		0.05       & 256   & 27.20           & true      & true           \\
+		0.025      & 64    & 25.60           & false     & false          \\
+		0.025      & 128   & 26.10           & true      & true           \\
+		0.025      & 256   & 26.175          & true      & true           \\
+	\end{tabular}
+\end{table}
+
+$\Sigma_d = 1$
+\begin{table}[H]
+	\centering
+	\begin{tabular}{l|r|ccc}
+		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
+		\hline
+		0.1        & 64    & 30.20           & true      & false          \\
+		0.1        & 128   & 30.90           & true      & false          \\
+		0.1        & 256   & 31.00           & true      & false          \\
+		0.05       & 64    & 28.10           & false     & false          \\
+		0.05       & 128   & 28.80           & true      & true           \\
+		0.05       & 256   & 28.90           & true      & true           \\
+		0.025      & 64    & 27.025          & false     & false          \\
+		0.025      & 128   & 27.70           & true      & true           \\
+		0.025      & 256   & 27.775          & true      & true           \\
+	\end{tabular}
+\end{table}
+
+$\Sigma_d = 0.1$
+\begin{table}[H]
+	\centering
+	\begin{tabular}{l|r|ccc}
+		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
+		\hline
+		0.1        & 64    & 31.70           & false     & false          \\
+		0.1        & 128   & 32.50           & false     & false          \\
+		0.1        & 256   & 32.60           & true      & false          \\
+		0.05       & 64    & 29.55           & false     & false          \\
+		0.05       & 128   & 30.25           & false     & false          \\
+		0.05       & 256   & 30.40           & false     & true           \\
+		0.025      & 64    & 28.40           & false     & false          \\
+		0.025      & 128   & 29.075          & false     & false          \\
+		0.025      & 256   & 29.225          & false     & true           \\
+	\end{tabular}
+\end{table}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.45\textwidth]{figs/S01.pdf}
+	\includegraphics[width=0.45\textwidth]{figs/S1.pdf}
+	\includegraphics[width=0.45\textwidth]{figs/S10.pdf}
+\end{figure}
 
 \nocite{*}
 \bibliographystyle{abbrv}
 \bibliography{biblio}
 
 \end{document}
+% vi:nowrap
