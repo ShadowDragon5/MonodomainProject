@@ -37,7 +37,8 @@
 	Finite Element Method
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Problem definition}
+	Monodomain equation
 	\begin{align*}
 		\pdv{u}{t} - \divergence \Sigma \grad u + f(u) & = 0   & \text{in } \Omega \times I,          \\
 		\mathbf{n} \cdot \grad u                       & = 0   & \text{on } \partial \Omega \times I, \\
@@ -45,12 +46,50 @@
 	\end{align*}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{IMEX}
+	With $U^n(x) \approx u(x, t_n)$
 	\begin{align*}
-		\frac{U^{n+1} - U^n}{\Delta t} = \divergence \Sigma \grad U^{n+1} - f(U^n).
+		\frac{U^{n+1} - U^n}{\Delta t}                        & = \divergence \Sigma \grad U^{n+1} - f(U^n) \\
+		\\
+		U^{n+1} - \Delta t\, \divergence \Sigma \grad U^{n+1} & = U^n - \Delta t\, f(U^n)
 	\end{align*}
 \end{frame}
 
+\begin{frame}{Algebraic formulation of the FEM discretization}
+
+	\begin{align*}
+		(\mathbf M + \Delta t\, \mathbf K)\, \mathbf u^{n+1} = \mathbf M\, \mathbf u^n - \Delta t\, \mathbf f(U^n),
+	\end{align*}
+
+	where:
+
+	\begin{align*}
+		\mathbf M_{ij}   & = \int_\Omega \phi_i(x) \phi_j(x)\,\diffd x \quad                             & \text{(mass matrix)},           \\
+		\mathbf K_{ij}   & = \int_\Omega \Sigma(x) \grad \phi_i(x) \cdot \grad \phi_j(x)\,\diffd x \quad & \text{(stiffness matrix)},      \\
+		\mathbf f_i(U^n) & = \int_\Omega f(U^n(x)) \phi_i(x)\,\diffd x \quad                             & \text{(nonlinear load vector)}.
+	\end{align*}
+\end{frame}
+
+\begin{frame}[plain]
+	\centering
+	\usebeamercolor[fg]{title}\usebeamerfont{title}
+	FEM Results
+\end{frame}
+
+\begin{frame}
+	\centering
+	\includegraphics[height=\textheight]{figs/S01.pdf}
+\end{frame}
+
+\begin{frame}
+	\centering
+	\includegraphics[height=\textheight]{figs/S1.pdf}
+\end{frame}
+
+\begin{frame}
+	\centering
+	\includegraphics[height=\textheight]{figs/S10.pdf}
+\end{frame}
 
 \begin{frame}{$\Sigma_d = 10$}
 	\begin{table}[H]
@@ -108,99 +147,5 @@
 		\end{tabular}
 	\end{table}
 \end{frame}
-
-\begin{frame}
-\end{frame}
-
-\begin{frame}
-	\centering
-	\includegraphics[height=\textheight]{figs/S01.pdf}
-\end{frame}
-
-\begin{frame}
-	\centering
-	\includegraphics[height=\textheight]{figs/S1.pdf}
-\end{frame}
-
-\begin{frame}
-	\centering
-	\includegraphics[height=\textheight]{figs/S10.pdf}
-\end{frame}
-
-% \begin{frame}{GCN}
-% 	\centering
-% 	\includegraphics[width=\textwidth]{./img/batched_plots.pdf}
-% \end{frame}
-%
-% \begin{frame}{GCN with gradient accumulation}
-% 	\centering
-% 	\includegraphics[width=\textwidth]{./img/acc_plots.pdf}
-% \end{frame}
-%
-% % \begin{frame}{Benchmark Code}
-% % 	\centering
-% % 	\includegraphics[width=.7\textwidth]{./img/loss_plots.pdf}
-% % \end{frame}
-%
-%
-% \begin{frame}{GCN Layer}
-%
-% 	\begin{equation*}
-% 		H^{(l+1)} = \sigma\left( D^{-1/2} \tilde{A} D^{-1/2} H^{(l)} W^{(l)} \right)
-% 	\end{equation*}
-%
-% 	\begin{itemize}
-% 		% \item \(H^{(l)}\): Node feature matrix at layer \(l\).
-% 		% \item \(\tilde{A} = A + I\): Adjacency matrix with self-loops added.
-% 		% \item \(D\): Degree matrix (\( D_{ii} = \sum_j \tilde{A}_{ij} \)).
-% 		% \item \(W^{(l)}\): Learnable weight matrix at layer \(l\).
-% 		% \item \(\sigma\): Activation function (ReLU).
-% 		\item $\tilde{A} = A + I$, $\tilde{A} \in \mathbb{R}^{n \times n}$: adjacency matrix with self-loops.
-% 		\item $D \in \mathbb{R}^{n \times n}$: degree matrix ($D_{ii} = \sum_j \tilde{A}_{ij}$).
-% 		\item $H^{(l)} \in \mathbb{R}^{n \times d}$: input - per-node feature vectors at layer \(l\).
-% 		\item $W^{(l)} \in \mathbb{R}^{d \times w}$: layer $l$ weights.
-% 		\item \(\sigma\): activation function (ReLU).
-% 	\end{itemize}
-% \end{frame}
-%
-%
-% \begin{frame}[fragile]\frametitle{GCN input}
-% 	\begin{verbatim}
-% x = torch.Size([3766, 3])
-% tensor([[0.2539, 0.2363, 0.2412],
-%         [0.3328, 0.2896, 0.3184],
-%         [0.3301, 0.2183, 0.3960],
-%         ...,
-%         [0.6509, 0.6431, 0.6611],
-%         [0.6768, 0.6768, 0.6772],
-%         [0.5552, 0.4404, 0.4204]])
-% \end{verbatim}
-% \end{frame}
-
-% \begin{frame}{Adam}
-%
-% 	% \[
-% 	% 	\text{Given: } \theta_t \text{ (parameters)}, \alpha \text{ (learning rate)}, \beta_1, \beta_2 \text{ (moment decay rates)}, \epsilon \text{ (small constant)}.
-% 	% \]
-%
-% 	% \textbf{Initialization: }
-% 	% \[
-% 	% 	m_0 = 0, \quad v_0 = 0, \quad t = 0.
-% 	% \]
-%
-% 	\textbf{For each timestep } \( t \):
-% 	\[
-% 		\begin{aligned}
-% 			1. \quad & t \leftarrow t + 1,                                                                     \\
-% 			2. \quad & g_t = \nabla_{\theta} f(\theta_{t-1}) + \lambda \theta_{t-1} \text{ --- weight decay} , \\
-% 			3. \quad & m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t,                                              \\
-% 			4. \quad & v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2,                                            \\
-% 			5. \quad & \hat{m}_t = \frac{m_t}{1 - \beta_1^t},                                                  \\
-% 			6. \quad & \hat{v}_t = \frac{v_t}{1 - \beta_2^t},                                                  \\
-% 			7. \quad & \theta_t = \theta_{t-1} - \alpha \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}.
-% 		\end{aligned}
-% 	\]
-%
-% \end{frame}
 
 \end{document}
