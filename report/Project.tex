@@ -27,8 +27,8 @@
 
 \noindent
 Let $\Omega = (0, 1)^2$ be the spatial domain and $I = (0, T]$ a time interval.
-We consider the dimensionless monodomain equation, used for the simulation of
-excitable tissues, which can be defined as:
+We consider the dimensionless monodomain equation, used for simulating
+excitable tissues, defined as:
 
 \begin{align*}
 	\pdv{u}{t} - \divergence \Sigma \grad u + f(u) & = 0   & \text{in } \Omega \times I,          \\
@@ -53,6 +53,8 @@ We assume heterogeneous conductivity across the spatial domain:
 	\Sigma_d & \in \qty{ 10\Sigma_h, \Sigma_h, 0.1\Sigma_h }.
 \end{align*}
 
+The diseased regions are defined as:
+
 \begin{align*}
 	\Omega_{d1} & = \qty{ (x, y) \in \Omega \mid (x - 0.3)^2 + (y - 0.7)^2 < 0.1^2 },  \\
 	\Omega_{d2} & = \qty{ (x, y) \in \Omega \mid (x - 0.7)^2 + (y - 0.3)^2 < 0.15^2 }, \\
@@ -65,9 +67,9 @@ We assume heterogeneous conductivity across the spatial domain:
 \subsection{IMEX time integration scheme}
 
 We discretize the time interval into steps of size $\Delta t$, and
-denote the approximation of $u(x, t_n)$ by $U^n(x)$. Let the
-nonlinear reaction term $f(u)$ be treated explicitly and the
-diffusion term implicitly. The semi-discrete IMEX scheme is:
+denote the approximation of $u(x, t_n)$ by $U^n(x)$. The
+nonlinear reaction term $f(u)$ is treated explicitly, while the
+diffusion term is treated implicitly. The semi-discrete IMEX scheme is:
 
 \begin{align*}
 	\frac{U^{n+1} - U^n}{\Delta t} = \divergence \Sigma \grad U^{n+1} - f(U^n).
@@ -80,7 +82,7 @@ Rearranging terms:
 	U^{n+1} - \Delta t\, \divergence \Sigma \grad U^{n+1} & = U^n - \Delta t\, f(U^n).
 \end{align*}
 
-Assuming a spatial discretization with mesh size $h$, and denoting
+Assuming a spatial discretization with a mesh of size $h$, and denoting
 by $A$ the discrete Laplace operator (stiffness matrix), we
 obtain the algebraic form:
 
@@ -99,7 +101,7 @@ $\mathbb{V}_h \subset \mathbb{V}$, and $u_j^n$ are the
 coefficients to be computed.
 
 
-\subsection{Weak formulation for time $t_n$}
+\subsection{Weak formulation at time $t_n$}
 
 Let $v \in \mathbb{V}$. Applying the IMEX time discretization, we multiply the equation by
 $v$ and integrate over $\Omega$:
@@ -107,7 +109,7 @@ $v$ and integrate over $\Omega$:
 \begin{align*}
 	\int_\Omega \frac{U^{n+1} - U^n}{\Delta t} v\,\diffd x +
 	\int_\Omega \Sigma \grad U^{n+1} \cdot \grad v\,\diffd x =
-	\int_\Omega f(U^n) v\,\diffd x
+	\int_\Omega f(U^n) v\,\diffd x.
 \end{align*}
 
 The boundary term vanishes due to the homogeneous Neumann condition:
@@ -115,18 +117,18 @@ The boundary term vanishes due to the homogeneous Neumann condition:
 	\int_{\partial \Omega} (\Sigma \nabla U^{n+1} \cdot \mathbf{n}) v \,\diffd s = 0.
 \]
 
-Find $U^{n+1} \in \mathbb{V}$ such that:
+We seek $U^{n+1} \in \mathbb{V}$ such that:
 
 \begin{align*}
-	a(U^{n+1}, v) = F(v) \quad \forall v \in \mathbb{V}
+	a(U^{n+1}, v) = F(v) \quad \forall v \in \mathbb{V},
 \end{align*}
 
 where
 
 \begin{align*}
 	a(U^{n+1}, v) & = \int_\Omega \frac{U^{n+1}}{\Delta t} v\,\diffd x
-	+ \int_\Omega \Sigma \grad U^{n+1} \cdot \grad v\,\diffd x                             \\
-	F(v)          & = \int_\Omega \left( \frac{U^n}{\Delta t} + f(U^n) \right) v\,\diffd x
+	+ \int_\Omega \Sigma \grad U^{n+1} \cdot \grad v\,\diffd x,                             \\
+	F(v)          & = \int_\Omega \left( \frac{U^n}{\Delta t} + f(U^n) \right) v\,\diffd x.
 \end{align*}
 
 
@@ -140,18 +142,44 @@ each time step:
 \end{align*}
 
 where:
-\begin{align*}
-	\mathbf M_{ij}   & = \int_\Omega \phi_i(x) \phi_j(x)\,\diffd x \quad                             & \text{(mass matrix)}           \\
-	\mathbf K_{ij}   & = \int_\Omega \Sigma(x) \grad \phi_i(x) \cdot \grad \phi_j(x)\,\diffd x \quad & \text{(stiffness matrix)}      \\
-	\mathbf f_i(U^n) & = \int_\Omega f(U^n(x)) \phi_i(x)\,\diffd x \quad                             & \text{(nonlinear load vector)}
-\end{align*}
 
+\begin{align*}
+	\mathbf M_{ij}   & = \int_\Omega \phi_i(x) \phi_j(x)\,\diffd x \quad                             & \text{(mass matrix)},           \\
+	\mathbf K_{ij}   & = \int_\Omega \Sigma(x) \grad \phi_i(x) \cdot \grad \phi_j(x)\,\diffd x \quad & \text{(stiffness matrix)},      \\
+	\mathbf f_i(U^n) & = \int_\Omega f(U^n(x)) \phi_i(x)\,\diffd x \quad                             & \text{(nonlinear load vector)}.
+\end{align*}
 
 \subsection{Simulation results}
 
-$\Sigma_d = 10$
+We studied the effect of different diffusivity values in the diseased region,
+$\Sigma_d \in \qty{10\Sigma_h, \Sigma_h, 0.1\Sigma_h}$, on the dynamics of wave
+propagation. The results show that the activation time increases as $\Sigma_d$
+decreases. This is expected, as a lower diffusivity slows down the spread of
+excitation through the diseased region. For example, at the finest resolution
+($\Delta t = 0.025$, $n_e = 256$), the activation times are approximately 26.18
+for $\Sigma_d = 10\Sigma_h$, 27.78 for $\Sigma_d = \Sigma_h$, and 29.23 for
+$\Sigma_d = 0.1\Sigma_h$. This trend is consistent across all time steps and
+grid resolutions.
+
+We also evaluated the numerical properties of the solution. In particular, we
+checked whether the stiffness matrix satisfies the M-matrix condition, which is
+associated with stability and monotonicity of the scheme. The results show that
+this condition is satisfied only for sufficiently small time steps and fine
+meshes. For instance, at $\Delta t = 0.1$, the M-matrix condition fails in most
+cases, especially for smaller $\Sigma_d$. At $\Delta t = 0.025$, the condition
+is generally satisfied for $\Sigma_d = \Sigma_h$ and $10\Sigma_h$, but not
+always for $0.1\Sigma_h$.
+
+Finally, we examined whether the numerical solution stays within the physically
+meaningful range $u \in [0, 1]$. Again, this requirement is met only when the
+mesh and time step are fine enough. Coarse discretizations tend to produce
+values outside the expected bounds, particularly when $\Sigma_d$ is small. This
+suggests that smaller diffusivity increases the stiffness of the problem,
+requiring more careful numerical treatment to ensure accurate results.
+
 \begin{table}[H]
 	\centering
+	\caption{Results of the simulation for $\Sigma_d = 10\Sigma_h$.}
 	\begin{tabular}{l|r|ccc}
 		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
 		\hline
@@ -167,9 +195,9 @@ $\Sigma_d = 10$
 	\end{tabular}
 \end{table}
 
-$\Sigma_d = 1$
 \begin{table}[H]
 	\centering
+	\caption{Results of the simulation for $\Sigma_d = \Sigma_h$.}
 	\begin{tabular}{l|r|ccc}
 		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
 		\hline
@@ -185,9 +213,9 @@ $\Sigma_d = 1$
 	\end{tabular}
 \end{table}
 
-$\Sigma_d = 0.1$
 \begin{table}[H]
 	\centering
+	\caption{Results of the simulation for $\Sigma_d = 0.1\Sigma_h$.}
 	\begin{tabular}{l|r|ccc}
 		$\Delta t$ & $n_e$ & Activation time & M-matrix? & $u \in [0, 1]$ \\
 		\hline
@@ -203,12 +231,17 @@ $\Sigma_d = 0.1$
 	\end{tabular}
 \end{table}
 
+Overall, the results confirm that lower diffusivity in the diseased region
+significantly slows wave propagation and makes the numerical problem more
+challenging. Finer meshes and smaller time steps are necessary to maintain both
+accuracy and physical realism.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.45\textwidth]{figs/S01.pdf}
-	\includegraphics[width=0.45\textwidth]{figs/S1.pdf}
 	\includegraphics[width=0.45\textwidth]{figs/S10.pdf}
+	\includegraphics[width=0.45\textwidth]{figs/S1.pdf}
+	\includegraphics[width=0.45\textwidth]{figs/S01.pdf}
+	\caption{Snapshots of the simulation over diseased regions for $\Sigma_d \in \qty{10\Sigma_h, \Sigma_h, 0.1\Sigma_h}$.}
 \end{figure}
 
 \nocite{*}
@@ -216,4 +249,6 @@ $\Sigma_d = 0.1$
 \bibliography{biblio}
 
 \end{document}
+
+
 % vi:nowrap
