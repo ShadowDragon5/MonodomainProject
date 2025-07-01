@@ -19,7 +19,7 @@ where:
 * $u(x, y, t)$ is the potential,
 * $\Sigma(x, y)$ is the spatially varying diffusion tensor,
 * $f(u)$ is a nonlinear reaction term,
-* $\Omega = [0,1]^2$, and $I = (0, T]$,
+* $\Omega = (0,1)^2$, and $I = (0, T]$,
 * Homogeneous Neumann boundary conditions are imposed.
 
 ---
@@ -34,6 +34,10 @@ The MATLAB code implements a 2D finite element method using quadrilateral elemen
 * M-matrix structure verification for numerical stability,
 * Visualization of the wave propagation.
 
-The figure below shows a snapshot of the potential $u(x,y,t)$ over time:
+The figures below shows a snapshot of the potential $u(x,y,t)$ over time with $`\Sigma_d \in \{ 10, 1, 0.1 \}`$:
 
-![Simulation](./matlab/simulation.gif)
+<p align="middle">
+  <img src="./matlab/Sigma10.gif" width="30%" />
+  <img src="./matlab/Sigma1.gif" width="30%" />
+  <img src="./matlab/Sigma01.gif" width="30%" />
+</p>
